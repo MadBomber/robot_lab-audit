@@ -1,0 +1,10 @@
+# frozen_string_literal: true
+# robot_lab-audit — SQLite-backed execution audit log via the Hook system.
+
+import_up "repo_dev.loki"
+
+class Tasks
+  @@gem_name ||= "robot_lab-audit".freeze
+
+  header "robot_lab-audit v#{gem_version} — execution audit log"
+end
