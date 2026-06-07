@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
-require "logger"
+require 'logger'
 
-require_relative "../../robot_lab/lib/robot_lab"
-require_relative "../lib/robot_lab/audit"
+require_relative '../../robot_lab/lib/robot_lab'
+require_relative '../lib/robot_lab/audit'
 
 RubyLLM.configure do |c|
   c.logger = Logger.new(File::NULL)
@@ -26,24 +26,28 @@ module ExOut
   GRAY  = "\e[90m"
 end
 
+
 def banner(title)
   puts
-  puts "#{ExOut::BOLD}#{"=" * ExOut::WIDTH}#{ExOut::RESET}"
+  puts "#{ExOut::BOLD}#{'=' * ExOut::WIDTH}#{ExOut::RESET}"
   puts "#{ExOut::BOLD} #{title}#{ExOut::RESET}"
-  puts "#{ExOut::BOLD}#{"=" * ExOut::WIDTH}#{ExOut::RESET}"
+  puts "#{ExOut::BOLD}#{'=' * ExOut::WIDTH}#{ExOut::RESET}"
   puts
 end
 
+
 def section(title)
   puts
-  tail = "─" * [ExOut::WIDTH - title.length - 4, 2].max
+  tail = '─' * [ExOut::WIDTH - title.length - 4, 2].max
   puts "#{ExOut::BOLD}#{ExOut::CYAN}── #{title} #{tail}#{ExOut::RESET}"
   puts
 end
 
+
 def hr
-  puts "#{ExOut::DIM}#{"─" * ExOut::WIDTH}#{ExOut::RESET}"
+  puts "#{ExOut::DIM}#{'─' * ExOut::WIDTH}#{ExOut::RESET}"
 end
+
 
 def kv(label, value, color: ExOut::RESET)
   puts "  #{ExOut::BOLD}#{label.ljust(18)}#{ExOut::RESET}#{color}#{value}#{ExOut::RESET}"
