@@ -17,4 +17,3 @@ gem 'minitest-reporters'
 gem 'simplecov', require: false
 
 gem 'ractor_queue'
-gem 'robot_lab', path: '../robot_lab'

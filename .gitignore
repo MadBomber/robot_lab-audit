@@ -12,3 +12,4 @@ test_output.txt
 flay_output.txt
 flog_output.txt
 rubocop_output.txt
+Gemfile.local.lock
