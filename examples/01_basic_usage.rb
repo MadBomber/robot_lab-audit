@@ -16,7 +16,7 @@
 # demo is fully reproducible and the focus stays on the audit log.
 #
 # Usage:
-#   bundle exec ruby examples/audit_demo.rb
+#   bundle exec ruby examples/01_basic_usage.rb
 
 require_relative 'common'
 require 'tmpdir'
