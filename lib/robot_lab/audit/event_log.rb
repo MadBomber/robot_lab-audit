@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-require "sqlite3"
-require "json"
-require "fileutils"
+require 'sqlite3'
+require 'json'
+require 'fileutils'
 
 module RobotLab
   module Audit
@@ -69,29 +69,29 @@ module RobotLab
       end
 
       def network_runs(limit: 100)
-        rows = @db.execute("SELECT * FROM network_runs ORDER BY started_at DESC LIMIT ?", [limit])
+        rows = @db.execute('SELECT * FROM network_runs ORDER BY started_at DESC LIMIT ?', [limit])
         rows.map { |r| row_to_hash(:network_runs, r) }
       end
 
       def events_for(run_id)
-        rows = @db.execute("SELECT * FROM audit_events WHERE run_id = ? ORDER BY started_at", [run_id])
+        rows = @db.execute('SELECT * FROM audit_events WHERE run_id = ? ORDER BY started_at', [run_id])
         rows.map { |r| row_to_hash(:audit_events, r) }
       end
 
       def recent_errors(limit: 50)
         rows = @db.execute(
-          "SELECT * FROM audit_events WHERE error_class IS NOT NULL ORDER BY started_at DESC LIMIT ?",
+          'SELECT * FROM audit_events WHERE error_class IS NOT NULL ORDER BY started_at DESC LIMIT ?',
           [limit]
         )
         rows.map { |r| row_to_hash(:audit_events, r) }
       end
 
-      private
-
       NETWORK_RUN_COLUMNS = %i[id run_id network_name input result error_class
-                                error_message started_at finished_at duration_ms].freeze
+                               error_message started_at finished_at duration_ms].freeze
       AUDIT_EVENT_COLUMNS = %i[id run_id event_type robot_name tool_name input output
-                                error_class error_message started_at finished_at duration_ms].freeze
+                               error_class error_message started_at finished_at duration_ms].freeze
+
+      private
 
       def row_to_hash(table, row)
         cols = table == :network_runs ? NETWORK_RUN_COLUMNS : AUDIT_EVENT_COLUMNS

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require_relative "audit/version"
-require_relative "audit/event_log"
+require_relative 'audit/version'
+require_relative 'audit/event_log'
 
 module RobotLab
   module Audit
@@ -15,7 +15,7 @@ module RobotLab
     #   RobotLab::Audit.enable(db_path: "~/.robot_lab/audit.db")
     def self.enable(db_path:)
       unless defined?(RobotLab::Audit::Hook)
-        raise Error, "robot_lab must be loaded before calling RobotLab::Audit.enable"
+        raise Error, 'robot_lab must be loaded before calling RobotLab::Audit.enable'
       end
 
       Hook.event_log = EventLog.new(db_path: db_path)
@@ -24,9 +24,7 @@ module RobotLab
   end
 end
 
-if defined?(RobotLab::Hook)
-  require_relative "audit/hook"
-end
+require_relative 'audit/hook' if defined?(RobotLab::Hook)
 
 if defined?(RobotLab) && RobotLab.respond_to?(:register_extension)
   RobotLab.register_extension(:audit, RobotLab::Audit)

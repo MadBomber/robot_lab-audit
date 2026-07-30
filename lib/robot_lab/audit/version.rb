@@ -2,6 +2,6 @@
 
 module RobotLab
   module Audit
-    VERSION = "0.1.0"
+    VERSION = '0.2.5'
   end
 end
