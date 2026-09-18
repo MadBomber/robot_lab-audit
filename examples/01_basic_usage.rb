@@ -33,7 +33,7 @@ end
 
 class WordCountTool < RobotLab::Tool
   description 'Counts words in a text string'
-  param :text, type: 'string', desc: 'The text to analyse'
+  parameter :text, type: 'string', description: 'The text to analyse'
 
   def execute(text:)
     { word_count: text.split.size, status: 'ok' }
@@ -43,7 +43,7 @@ end
 
 class SentimentTool < RobotLab::Tool
   description 'Returns a sentiment score for a text string'
-  param :text, type: 'string', desc: 'The text to score'
+  parameter :text, type: 'string', description: 'The text to score'
 
   def execute(text:)
     score = text.downcase.include?('great') ? 0.9 : 0.5
@@ -54,7 +54,7 @@ end
 
 class FailingTool < RobotLab::Tool
   description 'Always raises a ToolError (for error logging demo)'
-  param :reason, type: 'string', desc: 'Failure reason'
+  parameter :reason, type: 'string', description: 'Failure reason'
 
   def execute(reason:)
     raise RobotLab::ToolError, "Simulated failure: #{reason}"
@@ -198,8 +198,8 @@ word_count.instance_variable_set(:@robot, analyst)
 sentiment = SentimentTool.new
 sentiment.instance_variable_set(:@robot, analyst)
 
-word_count.call({ 'text' => input })
-sentiment.call({ 'text' => input })
+word_count.call(**{ 'text' => input })
+sentiment.call(**{ 'text' => input })
 
 all_tool_events = log.instance_variable_get(:@db)
                      .execute("SELECT * FROM audit_events WHERE event_type = 'tool_call'")
@@ -224,7 +224,7 @@ TEXT
 
 failing = FailingTool.new
 failing.instance_variable_set(:@robot, analyst)
-failing.call({ 'reason' => 'network timeout' })
+failing.call(**{ 'reason' => 'network timeout' })
 
 print_events(log.recent_errors, label: 'recent_errors (newest first):')
 
