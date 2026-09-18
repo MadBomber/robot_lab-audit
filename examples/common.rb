@@ -7,6 +7,9 @@ require_relative '../lib/robot_lab/audit'
 
 RubyLLM.configure do |c|
   c.logger = Logger.new(File::NULL)
+  # The demo robots stub out chat.ask, so no request ever reaches a provider —
+  # but ruby_llm 2.0 validates provider configuration when the chat is built.
+  c.anthropic_api_key = ENV.fetch("ANTHROPIC_API_KEY", "stub-key-never-used")
 end
 
 RobotLab.configure do |c|
