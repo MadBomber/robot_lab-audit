@@ -5,6 +5,12 @@ require 'json'
 
 module RobotLab
   module Audit
+    # :reek:RepeatedConditional -- each callback independently no-ops when
+    # event_log is nil, so the hook can be registered globally (RobotLab.on)
+    # before Audit.enable ever runs, or scoped to one robot/network without
+    # ever calling enable at all. A Null Object would remove the repeated
+    # check but couples every caller to a different `Hook.event_log` contract
+    # (an object always present vs. nil-means-disabled); not worth it here.
     class Hook < RobotLab::Hook
       self.namespace = :audit
 
@@ -62,6 +68,9 @@ module RobotLab
 
         private
 
+        # :reek:LongParameterList -- private helper with exactly two call
+        # sites, each passing every argument explicitly; a wrapper object
+        # would add indirection without making either call site clearer.
         def record_audit_event(event_type, ctx, started, tool_name, input, output, error)
           event_log.record_event(
             run_id:     current_run_id,

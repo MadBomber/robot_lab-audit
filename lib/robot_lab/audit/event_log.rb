@@ -44,6 +44,9 @@ module RobotLab
         @db.execute_batch(SCHEMA)
       end
 
+      # :reek:LongParameterList -- one required keyword per SCHEMA column, on
+      # purpose: a caller that forgets a column raises ArgumentError instead
+      # of silently inserting NULL.
       def record_network_run(run_id:, network_name:, input:, result:, error_class:,
                              error_message:, started_at:, finished_at:, duration_ms:)
         @db.execute(
@@ -56,6 +59,9 @@ module RobotLab
         )
       end
 
+      # :reek:LongParameterList -- one required keyword per SCHEMA column, on
+      # purpose: a caller that forgets a column raises ArgumentError instead
+      # of silently inserting NULL.
       def record_event(run_id:, event_type:, robot_name:, tool_name:, input:, output:,
                        error_class:, error_message:, started_at:, finished_at:, duration_ms:)
         @db.execute(
@@ -70,12 +76,12 @@ module RobotLab
 
       def network_runs(limit: 100)
         rows = @db.execute('SELECT * FROM network_runs ORDER BY started_at DESC LIMIT ?', [limit])
-        rows.map { |r| row_to_hash(:network_runs, r) }
+        rows.map { |r| row_to_hash(NETWORK_RUN_COLUMNS, r) }
       end
 
       def events_for(run_id)
         rows = @db.execute('SELECT * FROM audit_events WHERE run_id = ? ORDER BY started_at', [run_id])
-        rows.map { |r| row_to_hash(:audit_events, r) }
+        rows.map { |r| row_to_hash(AUDIT_EVENT_COLUMNS, r) }
       end
 
       def recent_errors(limit: 50)
@@ -83,7 +89,7 @@ module RobotLab
           'SELECT * FROM audit_events WHERE error_class IS NOT NULL ORDER BY started_at DESC LIMIT ?',
           [limit]
         )
-        rows.map { |r| row_to_hash(:audit_events, r) }
+        rows.map { |r| row_to_hash(AUDIT_EVENT_COLUMNS, r) }
       end
 
       NETWORK_RUN_COLUMNS = %i[id run_id network_name input result error_class
@@ -93,9 +99,8 @@ module RobotLab
 
       private
 
-      def row_to_hash(table, row)
-        cols = table == :network_runs ? NETWORK_RUN_COLUMNS : AUDIT_EVENT_COLUMNS
-        cols.zip(row).to_h
+      def row_to_hash(columns, row)
+        columns.zip(row).to_h
       end
     end
   end
