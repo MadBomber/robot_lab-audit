@@ -120,6 +120,22 @@ class TestEventLog < Minitest::Test
     assert_equal 'b', @log.events_for('run-002').first[:robot_name]
   end
 
+  def test_events_for_nil_returns_standalone_events
+    @log.record_event(
+      run_id: nil, event_type: 'robot_run', robot_name: 'solo', tool_name: nil,
+      input: nil, output: nil, error_class: nil, error_message: nil,
+      started_at: '2026-01-01T00:00:00.000Z', finished_at: nil, duration_ms: nil
+    )
+    @log.record_event(
+      run_id: 'run-1', event_type: 'robot_run', robot_name: 'networked', tool_name: nil,
+      input: nil, output: nil, error_class: nil, error_message: nil,
+      started_at: '2026-01-01T00:00:01.000Z', finished_at: nil, duration_ms: nil
+    )
+
+    names = @log.events_for(nil).map { |e| e[:robot_name] }
+    assert_equal ['solo'], names
+  end
+
   def test_creates_db_directory_if_absent
     nested = File.join(@dir, 'deep', 'nested', 'audit.db')
     RobotLab::Audit::EventLog.new(db_path: nested)

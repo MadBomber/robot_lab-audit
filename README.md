@@ -48,7 +48,12 @@ The database file and any missing parent directories are created automatically.
 Timestamps are ISO 8601 with millisecond precision.
 
 All events within a single `Network#run` share the same `run_id`, so you can
-reconstruct the full execution trace for any network run.
+reconstruct the full execution trace for any network run. The `run_id` is kept
+in fiber storage, which the fibers and threads a network starts for concurrent
+tasks inherit, so those robots share it too. It does not cross into Ractors.
+
+A robot or network run that raises is still recorded, with `error_class` and
+`error_message` set.
 
 Standalone `Robot#run` calls (outside a network) are also recorded; their `run_id`
 column will be `nil`.

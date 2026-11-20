@@ -20,7 +20,7 @@ end
 
 desc 'Run a single test file'
 task :test_file, [:file] do |_t, args|
-  ruby "test/#{args[:file]}"
+  ruby "-Ilib:test test/#{args[:file]}"
 end
 
 namespace :docs do

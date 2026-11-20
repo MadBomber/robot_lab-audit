@@ -117,10 +117,14 @@ can reach into them directly:
 ```sql
 SELECT json_extract(input, '$.text') AS text_arg, duration_ms
 FROM audit_events
-WHERE tool_name = 'word_count_tool';
+WHERE tool_name = 'word_count'
+  AND json_valid(input);
 ```
 
 Remember that a small fraction of `input`/`output` values may be a
 `#inspect` fallback string rather than valid JSON (see
-[How It Works — JSON Serialisation](how_it_works.md#json-serialisation-safe_json)) — `json_extract` will
-simply return `NULL` for those rows rather than raising.
+[How It Works — JSON Serialisation](how_it_works.md#json-serialisation-safe_json)) — `json_extract`
+raises a `malformed JSON` error on those rows, which is why the query above
+filters with `json_valid(input)`. (`tool_name` is the tool's RubyLLM name:
+the snake_cased class name with any `_tool` suffix removed, so
+`WordCountTool` is logged as `word_count`.)

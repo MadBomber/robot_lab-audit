@@ -25,19 +25,7 @@ module RobotLab
         end
 
         def after_network_run(ctx)
-          return unless event_log && current_run_id
-
-          event_log.record_network_run(
-            run_id:       current_run_id,
-            network_name: ctx.network&.name,
-            input:        extract_network_input(ctx.context),
-            result:       extract_network_result(ctx.result),
-            **error_fields(ctx.error),
-            **timing(current_network_started_at)
-          )
-        ensure
-          clear_run_id
-          clear_network_started_at
+          record_network_run(ctx)
         end
 
         def before_run(ctx)
@@ -45,12 +33,7 @@ module RobotLab
         end
 
         def after_run(ctx)
-          return unless event_log
-
-          record_audit_event(
-            'robot_run', ctx, ctx.local.started_at,
-            nil, safe_json(ctx.request), safe_json(ctx.response), ctx.error
-          )
+          record_robot_run(ctx)
         end
 
         def before_tool_call(ctx)
@@ -66,7 +49,44 @@ module RobotLab
           )
         end
 
+        # Core skips the after_* hooks when a run raises and calls on_error
+        # instead, for the run, network_run and task families. Without this
+        # callback a failed robot or network run would leave no row at all.
+        # Task failures are not recorded separately: the robot run inside the
+        # task already was.
+        def on_error(ctx)
+          case ctx
+          when RobotLab::NetworkRunHookContext then record_network_run(ctx)
+          when RobotLab::RunHookContext        then record_robot_run(ctx)
+          end
+        end
+
         private
+
+        def record_network_run(ctx)
+          return unless event_log && current_run_id
+
+          event_log.record_network_run(
+            run_id:       current_run_id,
+            network_name: ctx.network&.name,
+            input:        extract_network_input(ctx.context),
+            result:       extract_network_result(ctx.result),
+            **error_fields(ctx.error),
+            **timing(current_network_started_at)
+          )
+        ensure
+          clear_run_id
+          clear_network_started_at
+        end
+
+        def record_robot_run(ctx)
+          return unless event_log
+
+          record_audit_event(
+            'robot_run', ctx, ctx.local.started_at,
+            nil, safe_json(ctx.request), safe_json(ctx.response), ctx.error
+          )
+        end
 
         # :reek:LongParameterList -- private helper with exactly two call
         # sites, each passing every argument explicitly; a wrapper object
@@ -100,35 +120,42 @@ module RobotLab
           }
         end
 
+        # The run id lives in fiber storage (Fiber[]), not Thread.current[]:
+        # fiber storage is copied into every Fiber and Thread created while
+        # it is set, so robots that a network runs concurrently still log
+        # under the network's run id. Thread.current[] is per-fiber and is
+        # not inherited, which left those rows with a NULL run_id.
         def set_run_id(id)
-          Thread.current[:robot_lab_audit_run_id] = id
+          Fiber[:robot_lab_audit_run_id] = id
         end
 
         def current_run_id
-          Thread.current[:robot_lab_audit_run_id]
+          Fiber[:robot_lab_audit_run_id]
         end
 
         def clear_run_id
-          Thread.current[:robot_lab_audit_run_id] = nil
+          Fiber[:robot_lab_audit_run_id] = nil
         end
 
         def set_network_started_at(time)
-          Thread.current[:robot_lab_audit_network_started_at] = time
+          Fiber[:robot_lab_audit_network_started_at] = time
         end
 
         def current_network_started_at
-          Thread.current[:robot_lab_audit_network_started_at]
+          Fiber[:robot_lab_audit_network_started_at]
         end
 
         def clear_network_started_at
-          Thread.current[:robot_lab_audit_network_started_at] = nil
+          Fiber[:robot_lab_audit_network_started_at] = nil
         end
 
+        # JSON::JSONError covers GeneratorError (NaN, Infinity) and
+        # NestingError (circular references).
         def safe_json(value)
           return nil if value.nil?
 
           JSON.generate(value)
-        rescue JSON::GeneratorError, TypeError
+        rescue JSON::JSONError, TypeError
           value.inspect
         end
 
