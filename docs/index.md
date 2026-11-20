@@ -23,7 +23,7 @@ post-mortem analysis or debugging.
 ## Navigation
 
 - [Getting Started](getting_started.md) — installation, enabling the hook, a minimal example, scoping to one robot or network
-- [How It Works](how_it_works.md) — the SQLite schema, how each Hook callback maps to a row, run_id correlation, thread-local state, JSON serialisation
+- [How It Works](how_it_works.md) — the SQLite schema, how each Hook callback maps to a row, run_id correlation, run state, JSON serialisation
 - [Querying the Log](querying.md) — the `EventLog` query API and raw SQL examples for post-mortem analysis
 
 ## At a Glance

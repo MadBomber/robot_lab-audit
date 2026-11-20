@@ -79,8 +79,10 @@ module RobotLab
         rows.map { |r| row_to_hash(NETWORK_RUN_COLUMNS, r) }
       end
 
+      # Pass nil to fetch standalone events (robot runs and tool calls made
+      # outside any network run). `IS ?` matches NULL, where `= ?` never would.
       def events_for(run_id)
-        rows = @db.execute('SELECT * FROM audit_events WHERE run_id = ? ORDER BY started_at', [run_id])
+        rows = @db.execute('SELECT * FROM audit_events WHERE run_id IS ? ORDER BY started_at', [run_id])
         rows.map { |r| row_to_hash(AUDIT_EVENT_COLUMNS, r) }
       end
 

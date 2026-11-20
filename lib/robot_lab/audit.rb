@@ -19,7 +19,13 @@ module RobotLab
       end
 
       Hook.event_log = EventLog.new(db_path: db_path)
-      RobotLab.on(Hook)
+      RobotLab.on(Hook) unless registered?
+    end
+
+    # True when the audit hook is already in the global hook registry, so
+    # calling enable again swaps the database without logging events twice.
+    def self.registered?
+      RobotLab.hooks.registrations.any? { |reg| reg.handler_class == Hook }
     end
   end
 end

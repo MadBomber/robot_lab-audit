@@ -84,14 +84,18 @@ each pair that carries the guard, not the `before_*` half.
 ```
 before_network_run(ctx)
   → generates a new run_id  (SecureRandom.uuid)
-  → stores run_id and started_at in Thread.current
+  → stores run_id and started_at in fiber storage (Fiber[])
 
   ... network executes: robots run, tools are called ...
 
-after_network_run(ctx)
-  → writes the network_runs row using the thread-local run_id/started_at
-  → clears both thread-locals in an `ensure` block
+after_network_run(ctx)        # or on_error(ctx) when the run raised
+  → writes the network_runs row using the stored run_id/started_at
+  → clears both keys in an `ensure` block
 ```
+
+RobotLab skips the `after_*` hooks when a run raises and calls `on_error`
+instead, so the hook implements `on_error` as well: it writes the same row,
+with `error_class`/`error_message` filled in, and clears the same state.
 
 `after_network_run` is a no-op if there is no `current_run_id` — this
 guards against `after_network_run` firing without a matching
@@ -99,43 +103,50 @@ guards against `after_network_run` firing without a matching
 
 ### Robot run and tool call lifecycle
 
-`before_run` / `before_tool_call` don't touch `Thread.current` at all —
+`before_run` / `before_tool_call` don't touch fiber storage at all —
 they stash `started_at` on `ctx.local`, which is namespace-scoped state that
 RobotLab's `HookContext` provides per-callback-pair (see
 `ctx.with_namespace(:audit)` in the test suite for how this is activated).
 
 `after_run` / `after_tool_call` then read `ctx.local.started_at`, look up the
-thread-local `run_id` set by an enclosing `before_network_run` (or `nil` if
+`run_id` set by an enclosing `before_network_run` (or `nil` if
 there is none), and write one `audit_events` row via the shared private
-`record_audit_event` helper.
+`record_audit_event` helper. A robot run that raises reaches the same code
+through `on_error`, so it is recorded as a `"robot_run"` row with the error
+columns set.
 
 ### Run ID correlation
 
 All events produced while a given `Network#run` is executing — the network
 run itself, every robot invocation, every tool call — share the same
-`run_id`, because that ID lives in `Thread.current` for the duration of the
+`run_id`, because that ID lives in fiber storage for the duration of the
 network run and every robot/tool callback reads it. This is what makes
 `EventLog#events_for(run_id)` a full execution trace rather than a fragment.
+Tasks with no dependency between them are run by the network in separate
+fibers or threads; those inherit a copy of the storage when they are created,
+so their events carry the same `run_id` (see
+[Run State](#run-state)).
 
 Standalone `Robot#run` or `Tool#call` invocations made outside of any
 network run see `current_run_id` as `nil` — they still get logged, just
 without a correlating run.
 
-## Thread-Local State
+## Run State
 
-Two `Thread.current` keys carry state between the `before_*` and `after_*`
-halves of the network-run lifecycle:
+Two fiber-storage keys (`Fiber[]`) carry state between the `before_*` and
+`after_*` halves of the network-run lifecycle:
 
 | Key | Set in | Cleared in | Purpose |
 |-----|--------|-----------|---------|
-| `:robot_lab_audit_run_id` | `before_network_run` | `after_network_run` (`ensure`) | correlates all events within one network run |
-| `:robot_lab_audit_network_started_at` | `before_network_run` | `after_network_run` (`ensure`) | computes the network run's `duration_ms` |
+| `:robot_lab_audit_run_id` | `before_network_run` | `after_network_run` / `on_error` (`ensure`) | correlates all events within one network run |
+| `:robot_lab_audit_network_started_at` | `before_network_run` | `after_network_run` / `on_error` (`ensure`) | computes the network run's `duration_ms` |
 
-Because this is `Thread.current` rather than `ctx.local`, run correlation
-does **not** cross Fiber or Ractor boundaries — parallel work dispatched via
-`robot_lab-ractor`, for instance, will not inherit the parent network run's
-`run_id`. `before_run`/`before_tool_call` state, by contrast, uses `ctx.local`
-and is scoped per-callback-pair regardless of thread.
+Fiber storage is copied into every Fiber and Thread created while it is set,
+which is how concurrent network tasks inherit the parent run's `run_id`
+(`Thread.current[]` is per-fiber and is not inherited). It does **not** cross
+Ractor boundaries — parallel work dispatched via `robot_lab-ractor` is
+recorded with a `nil` `run_id`. `before_run`/`before_tool_call` state, by
+contrast, uses `ctx.local` and is scoped per-callback-pair.
 
 ## JSON Serialisation (`safe_json`)
 
@@ -147,13 +158,15 @@ def safe_json(value)
   return nil if value.nil?
 
   JSON.generate(value)
-rescue JSON::GeneratorError, TypeError
+rescue JSON::JSONError, TypeError
   value.inspect
 end
 ```
 
-If a value can't be JSON-encoded (circular references, unsupported types),
-the column falls back to Ruby's `#inspect` string instead of raising. Don't
+If `JSON.generate` raises a `JSON::JSONError` or `TypeError` (a `NaN` or
+`Infinity` float, or a circular reference, for example), the column falls back to Ruby's `#inspect`
+string instead of raising. Arbitrary objects don't trigger the fallback —
+`JSON.generate` encodes them as a JSON string of their `#to_s`. Don't
 assume every `input`/`output` value is parseable JSON — check for `nil`
 first if you write tooling against the column, and be prepared for an
 `inspect`-style string on the rare unencodable payload.
@@ -170,7 +183,9 @@ and finally to `#inspect` if anything raises.
 When a network run, robot run, or tool call raises, the hook's
 `error_fields` helper extracts `error_class` (the exception's class name as
 a string) and `error_message` (the exception's message) from whatever
-`ctx.error` / `ctx.tool_error` object RobotLab's Hook system populates. Both
+`ctx.error` / `ctx.tool_error` object RobotLab's Hook system populates. Failed
+robot and network runs arrive through `on_error`; failed tool calls arrive
+through `after_tool_call` with `ctx.tool_error` set. Both
 columns are `nil` on success. `EventLog#recent_errors` filters
 `audit_events` down to rows where `error_class IS NOT NULL`.
 

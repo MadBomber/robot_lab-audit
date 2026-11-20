@@ -47,7 +47,8 @@ network.run(message: "do something")
 3. Registers the hook globally via `RobotLab.on(Hook)`.
 
 Calling `enable` again with a new `db_path` simply repoints the hook at a new
-`EventLog` — it is safe to call once at boot.
+`EventLog`; the hook itself is registered only once, so repeated calls never
+log an event twice.
 
 If `robot_lab` has not been loaded yet, `enable` raises
 `RobotLab::Audit::Error` ("robot_lab must be loaded before calling
@@ -66,7 +67,9 @@ precision.
 
 Every event produced while a `Network#run` is in flight shares that run's
 `run_id`, so you can pull the entire trace for one execution with
-`events_for(run_id)` (see [Querying the Log](querying.md)).
+`events_for(run_id)` (see [Querying the Log](querying.md)). That includes robots
+the network runs concurrently; only work moved into a Ractor loses the
+`run_id` — see [Key Constraints](#key-constraints).
 
 Standalone `Robot#run` calls made outside of a network are recorded too —
 their `run_id` column is `nil`.
@@ -125,5 +128,5 @@ twice — once globally and once for the specific object.
 
 - `robot_lab` must be `require`d before `robot_lab/audit` — see Prerequisites above.
 - `EventLog` is not thread-safe by itself; SQLite handles concurrent writes via its own file locking.
-- Run IDs are correlated via `Thread.current` — they are **not** propagated across Fibers or Ractors. Work dispatched off-thread (e.g. via `robot_lab-ractor`) will not share a `run_id` with its parent network run.
+- Run IDs are correlated via fiber storage (`Fiber[]`), which is copied into every Fiber and Thread created while a network run is in flight, so concurrent network tasks keep their parent's `run_id`. It is **not** propagated into Ractors: work dispatched via `robot_lab-ractor` is recorded with a `nil` `run_id`.
 - `safe_json` (used internally to serialise `input`/`output`) silently falls back to `#inspect` for values that can't be JSON-encoded — don't assume every `input`/`output` column is valid JSON when a tool passes an unusual argument type.
