@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.2">
     
     
       
@@ -31,10 +31,10 @@
       
     
     
-      <link rel="stylesheet" href="assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="assets/stylesheets/main.57a0d79d.min.css">
       
         
-        <link rel="stylesheet" href="assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="assets/stylesheets/palette.fb2fffe2.min.css">
       
       
 
@@ -644,14 +644,14 @@
 <h1 id="robot_lab-audit">robot_lab-audit<a class="headerlink" href="#robot_lab-audit" title="Permanent link">&para;</a></h1>
 <p>A SQLite-backed execution audit log for the <a href="https://github.com/MadBomber/robot_lab">RobotLab</a> LLM agent framework.</p>
 <p><code>RobotLab::Audit</code> plugs into RobotLab's <a href="https://github.com/MadBomber/robot_lab/blob/main/docs/guides/hooks.md">Hook system</a> and writes one row per network run, robot invocation, and tool call to a local SQLite database — timestamps, JSON input/output, errors, and duration in milliseconds. Zero changes required to your robots, networks, or tools.</p>
-<div class="language-ruby highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nb">require</span><span class="w"> </span><span class="s2">&quot;robot_lab&quot;</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="nb">require</span><span class="w"> </span><span class="s2">&quot;robot_lab/audit&quot;</span>
+<div class="language-ruby highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nb">require</span><span class="w"> </span><span class="s2">"robot_lab"</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="nb">require</span><span class="w"> </span><span class="s2">"robot_lab/audit"</span>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="no">RobotLab</span><span class="o">::</span><span class="no">Audit</span><span class="o">.</span><span class="n">enable</span><span class="p">(</span><span class="ss">db_path</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;~/.robot_lab/audit.db&quot;</span><span class="p">)</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="no">RobotLab</span><span class="o">::</span><span class="no">Audit</span><span class="o">.</span><span class="n">enable</span><span class="p">(</span><span class="ss">db_path</span><span class="p">:</span><span class="w"> </span><span class="s2">"~/.robot_lab/audit.db"</span><span class="p">)</span>
 </span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>
 </span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="c1"># All subsequent network and robot runs are recorded automatically.</span>
 </span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="n">network</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="no">RobotLab</span><span class="o">.</span><span class="n">create_network</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="n">network</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="ss">message</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;do something&quot;</span><span class="p">)</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="n">network</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="ss">message</span><span class="p">:</span><span class="w"> </span><span class="s2">"do something"</span><span class="p">)</span>
 </span></code></pre></div>
 <p>Every event from a single <code>Network#run</code> shares the same <code>run_id</code>, so the full
 execution trace — which robots ran, which tools they called, what each one
@@ -810,10 +810,10 @@ post-mortem analysis or debugging.</p>
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": ".", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.tabs.sticky", "navigation.path", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "search.highlight", "search.share", "header.autohide", "content.code.copy", "content.code.annotate", "content.tabs.link", "content.tooltips", "content.action.edit", "content.action.view"], "search": "assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": ".", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.tabs.sticky", "navigation.path", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "search.highlight", "search.share", "header.autohide", "content.code.copy", "content.code.annotate", "content.tabs.link", "content.tooltips", "content.action.edit", "content.action.view"], "search": "assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="assets/javascripts/bundle.a5f9d56c.min.js"></script>
       
     
   </body>

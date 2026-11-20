@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.2">
     
     
       
@@ -33,10 +33,10 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.57a0d79d.min.css">
       
         
-        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../assets/stylesheets/palette.fb2fffe2.min.css">
       
       
 
@@ -734,14 +734,14 @@
 <h1 id="getting-started">Getting Started<a class="headerlink" href="#getting-started" title="Permanent link">&para;</a></h1>
 <h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Ruby 3.2+ (per the gemspec's <code>required_ruby_version</code>)</li>
+<li>Ruby 4.0.9+ (per the gemspec's <code>required_ruby_version</code>)</li>
 <li><code>robot_lab</code> — <code>robot_lab/audit</code> requires <code>RobotLab::Hook</code> to already be defined, so <code>robot_lab</code> must be <code>require</code>d first.</li>
 <li>SQLite — the gem depends on the <code>sqlite3</code> gem directly; no separate database server to run.</li>
 </ul>
 <h2 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">&para;</a></h2>
 <p>Add to your <code>Gemfile</code>:</p>
-<div class="language-ruby highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">gem</span><span class="w"> </span><span class="s2">&quot;robot_lab&quot;</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="n">gem</span><span class="w"> </span><span class="s2">&quot;robot_lab-audit&quot;</span>
+<div class="language-ruby highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">gem</span><span class="w"> </span><span class="s2">"robot_lab"</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="n">gem</span><span class="w"> </span><span class="s2">"robot_lab-audit"</span>
 </span></code></pre></div>
 <p>Then:</p>
 <div class="language-sh highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>bundle<span class="w"> </span>install
@@ -750,13 +750,13 @@
 <div class="language-sh highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>gem<span class="w"> </span>install<span class="w"> </span>robot_lab-audit
 </span></code></pre></div>
 <h2 id="enabling-globally">Enabling Globally<a class="headerlink" href="#enabling-globally" title="Permanent link">&para;</a></h2>
-<div class="language-ruby highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nb">require</span><span class="w"> </span><span class="s2">&quot;robot_lab&quot;</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="nb">require</span><span class="w"> </span><span class="s2">&quot;robot_lab/audit&quot;</span>
+<div class="language-ruby highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nb">require</span><span class="w"> </span><span class="s2">"robot_lab"</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="nb">require</span><span class="w"> </span><span class="s2">"robot_lab/audit"</span>
 </span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="no">RobotLab</span><span class="o">::</span><span class="no">Audit</span><span class="o">.</span><span class="n">enable</span><span class="p">(</span><span class="ss">db_path</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;~/.robot_lab/audit.db&quot;</span><span class="p">)</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="no">RobotLab</span><span class="o">::</span><span class="no">Audit</span><span class="o">.</span><span class="n">enable</span><span class="p">(</span><span class="ss">db_path</span><span class="p">:</span><span class="w"> </span><span class="s2">"~/.robot_lab/audit.db"</span><span class="p">)</span>
 </span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>
 </span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="n">network</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="no">RobotLab</span><span class="o">.</span><span class="n">create_network</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
-</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="n">network</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="ss">message</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;do something&quot;</span><span class="p">)</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="n">network</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="ss">message</span><span class="p">:</span><span class="w"> </span><span class="s2">"do something"</span><span class="p">)</span>
 </span></code></pre></div>
 <p><code>RobotLab::Audit.enable(db_path:)</code>:</p>
 <ol>
@@ -801,18 +801,18 @@ precision.</p>
 <p>Standalone <code>Robot#run</code> calls made outside of a network are recorded too —
 their <code>run_id</code> column is <code>nil</code>.</p>
 <h2 id="minimal-example">Minimal Example<a class="headerlink" href="#minimal-example" title="Permanent link">&para;</a></h2>
-<div class="language-ruby highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nb">require</span><span class="w"> </span><span class="s2">&quot;robot_lab&quot;</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="nb">require</span><span class="w"> </span><span class="s2">&quot;robot_lab/audit&quot;</span>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="nb">require</span><span class="w"> </span><span class="s2">&quot;tmpdir&quot;</span>
+<div class="language-ruby highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nb">require</span><span class="w"> </span><span class="s2">"robot_lab"</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="nb">require</span><span class="w"> </span><span class="s2">"robot_lab/audit"</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="nb">require</span><span class="w"> </span><span class="s2">"tmpdir"</span>
 </span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="no">RobotLab</span><span class="o">::</span><span class="no">Audit</span><span class="o">.</span><span class="n">enable</span><span class="p">(</span><span class="ss">db_path</span><span class="p">:</span><span class="w"> </span><span class="no">File</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="no">Dir</span><span class="o">.</span><span class="n">mktmpdir</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;audit.db&quot;</span><span class="p">))</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="no">RobotLab</span><span class="o">::</span><span class="no">Audit</span><span class="o">.</span><span class="n">enable</span><span class="p">(</span><span class="ss">db_path</span><span class="p">:</span><span class="w"> </span><span class="no">File</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="no">Dir</span><span class="o">.</span><span class="n">mktmpdir</span><span class="p">,</span><span class="w"> </span><span class="s2">"audit.db"</span><span class="p">))</span>
 </span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>
-</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="n">robot</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="no">RobotLab</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="nb">name</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;greeter&quot;</span><span class="p">,</span><span class="w"> </span><span class="ss">system_prompt</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;You are a friendly greeter.&quot;</span><span class="p">)</span>
-</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="n">robot</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s2">&quot;Say hello&quot;</span><span class="p">)</span>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="n">robot</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="no">RobotLab</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="nb">name</span><span class="p">:</span><span class="w"> </span><span class="s2">"greeter"</span><span class="p">,</span><span class="w"> </span><span class="ss">system_prompt</span><span class="p">:</span><span class="w"> </span><span class="s2">"You are a friendly greeter."</span><span class="p">)</span>
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="n">robot</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s2">"Say hello"</span><span class="p">)</span>
 </span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>
 </span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="n">log</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="no">RobotLab</span><span class="o">::</span><span class="no">Audit</span><span class="o">::</span><span class="no">Hook</span><span class="o">.</span><span class="n">event_log</span>
 </span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="n">log</span><span class="o">.</span><span class="n">events_for</span><span class="p">(</span><span class="kp">nil</span><span class="p">)</span><span class="o">.</span><span class="n">each</span><span class="w"> </span><span class="k">do</span><span class="w"> </span><span class="o">|</span><span class="n">event</span><span class="o">|</span>
-</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="w">  </span><span class="nb">puts</span><span class="w"> </span><span class="s2">&quot;</span><span class="si">#{</span><span class="n">event</span><span class="o">[</span><span class="ss">:event_type</span><span class="o">]</span><span class="si">}</span><span class="s2">  </span><span class="si">#{</span><span class="n">event</span><span class="o">[</span><span class="ss">:robot_name</span><span class="o">]</span><span class="si">}</span><span class="s2">  </span><span class="si">#{</span><span class="n">event</span><span class="o">[</span><span class="ss">:duration_ms</span><span class="o">]</span><span class="si">}</span><span class="s2">ms&quot;</span>
+</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="w">  </span><span class="nb">puts</span><span class="w"> </span><span class="s2">"</span><span class="si">#{</span><span class="n">event</span><span class="o">[</span><span class="ss">:event_type</span><span class="o">]</span><span class="si">}</span><span class="s2">  </span><span class="si">#{</span><span class="n">event</span><span class="o">[</span><span class="ss">:robot_name</span><span class="o">]</span><span class="si">}</span><span class="s2">  </span><span class="si">#{</span><span class="n">event</span><span class="o">[</span><span class="ss">:duration_ms</span><span class="o">]</span><span class="si">}</span><span class="s2">ms"</span>
 </span><span id="__span-4-13"><a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="k">end</span>
 </span></code></pre></div>
 <p>The gem ships a fuller, self-contained demo with no API keys required — it
@@ -826,7 +826,7 @@ tool call capture, error capture, and scoping the hook to a single robot.</p>
 <p><code>RobotLab::Audit.enable</code> registers the hook globally — every robot and
 network in the process gets logged. To audit only specific objects, skip
 <code>enable</code> and register the hook directly instead:</p>
-<div class="language-ruby highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="no">RobotLab</span><span class="o">::</span><span class="no">Audit</span><span class="o">::</span><span class="no">Hook</span><span class="o">.</span><span class="n">event_log</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="no">RobotLab</span><span class="o">::</span><span class="no">Audit</span><span class="o">::</span><span class="no">EventLog</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="ss">db_path</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;audit.db&quot;</span><span class="p">)</span>
+<div class="language-ruby highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="no">RobotLab</span><span class="o">::</span><span class="no">Audit</span><span class="o">::</span><span class="no">Hook</span><span class="o">.</span><span class="n">event_log</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="no">RobotLab</span><span class="o">::</span><span class="no">Audit</span><span class="o">::</span><span class="no">EventLog</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="ss">db_path</span><span class="p">:</span><span class="w"> </span><span class="s2">"audit.db"</span><span class="p">)</span>
 </span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
 </span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="n">robot</span><span class="o">.</span><span class="n">on</span><span class="p">(</span><span class="no">RobotLab</span><span class="o">::</span><span class="no">Audit</span><span class="o">::</span><span class="no">Hook</span><span class="p">)</span>
 </span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="c1"># or</span>
@@ -966,10 +966,10 @@ twice — once globally and once for the specific object.</p>
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.tabs.sticky", "navigation.path", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "search.highlight", "search.share", "header.autohide", "content.code.copy", "content.code.annotate", "content.tabs.link", "content.tooltips", "content.action.edit", "content.action.view"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.tabs.sticky", "navigation.path", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "search.highlight", "search.share", "header.autohide", "content.code.copy", "content.code.annotate", "content.tabs.link", "content.tooltips", "content.action.edit", "content.action.view"], "search": "../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="../assets/javascripts/bundle.a5f9d56c.min.js"></script>
       
     
   </body>
