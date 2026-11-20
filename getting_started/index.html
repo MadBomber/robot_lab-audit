@@ -766,7 +766,8 @@
 <li>Registers the hook globally via <code>RobotLab.on(Hook)</code>.</li>
 </ol>
 <p>Calling <code>enable</code> again with a new <code>db_path</code> simply repoints the hook at a new
-<code>EventLog</code> — it is safe to call once at boot.</p>
+<code>EventLog</code>; the hook itself is registered only once, so repeated calls never
+log an event twice.</p>
 <p>If <code>robot_lab</code> has not been loaded yet, <code>enable</code> raises
 <code>RobotLab::Audit::Error</code> ("robot_lab must be loaded before calling
 RobotLab::Audit.enable").</p>
@@ -797,7 +798,9 @@ values are stored as JSON text. Timestamps are UTC, ISO 8601, with millisecond
 precision.</p>
 <p>Every event produced while a <code>Network#run</code> is in flight shares that run's
 <code>run_id</code>, so you can pull the entire trace for one execution with
-<code>events_for(run_id)</code> (see <a href="../querying/">Querying the Log</a>).</p>
+<code>events_for(run_id)</code> (see <a href="../querying/">Querying the Log</a>). That includes robots
+the network runs concurrently; only work moved into a Ractor loses the
+<code>run_id</code> — see <a href="#key-constraints">Key Constraints</a>.</p>
 <p>Standalone <code>Robot#run</code> calls made outside of a network are recorded too —
 their <code>run_id</code> column is <code>nil</code>.</p>
 <h2 id="minimal-example">Minimal Example<a class="headerlink" href="#minimal-example" title="Permanent link">&para;</a></h2>
@@ -841,7 +844,7 @@ twice — once globally and once for the specific object.</p>
 <ul>
 <li><code>robot_lab</code> must be <code>require</code>d before <code>robot_lab/audit</code> — see Prerequisites above.</li>
 <li><code>EventLog</code> is not thread-safe by itself; SQLite handles concurrent writes via its own file locking.</li>
-<li>Run IDs are correlated via <code>Thread.current</code> — they are <strong>not</strong> propagated across Fibers or Ractors. Work dispatched off-thread (e.g. via <code>robot_lab-ractor</code>) will not share a <code>run_id</code> with its parent network run.</li>
+<li>Run IDs are correlated via fiber storage (<code>Fiber[]</code>), which is copied into every Fiber and Thread created while a network run is in flight, so concurrent network tasks keep their parent's <code>run_id</code>. It is <strong>not</strong> propagated into Ractors: work dispatched via <code>robot_lab-ractor</code> is recorded with a <code>nil</code> <code>run_id</code>.</li>
 <li><code>safe_json</code> (used internally to serialise <code>input</code>/<code>output</code>) silently falls back to <code>#inspect</code> for values that can't be JSON-encoded — don't assume every <code>input</code>/<code>output</code> column is valid JSON when a tool passes an unusual argument type.</li>
 </ul>
 

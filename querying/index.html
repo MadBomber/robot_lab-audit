@@ -749,12 +749,16 @@ single-file database; any SQL client works.</p>
 can reach into them directly:</p>
 <div class="language-sql highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="k">SELECT</span><span class="w"> </span><span class="n">json_extract</span><span class="p">(</span><span class="k">input</span><span class="p">,</span><span class="w"> </span><span class="s1">'$.text'</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">text_arg</span><span class="p">,</span><span class="w"> </span><span class="n">duration_ms</span>
 </span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="k">FROM</span><span class="w"> </span><span class="n">audit_events</span>
-</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="k">WHERE</span><span class="w"> </span><span class="n">tool_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'word_count_tool'</span><span class="p">;</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="k">WHERE</span><span class="w"> </span><span class="n">tool_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'word_count'</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">  </span><span class="k">AND</span><span class="w"> </span><span class="n">json_valid</span><span class="p">(</span><span class="k">input</span><span class="p">);</span>
 </span></code></pre></div>
 <p>Remember that a small fraction of <code>input</code>/<code>output</code> values may be a
 <code>#inspect</code> fallback string rather than valid JSON (see
-<a href="../how_it_works/#json-serialisation-safe_json">How It Works — JSON Serialisation</a>) — <code>json_extract</code> will
-simply return <code>NULL</code> for those rows rather than raising.</p>
+<a href="../how_it_works/#json-serialisation-safe_json">How It Works — JSON Serialisation</a>) — <code>json_extract</code>
+raises a <code>malformed JSON</code> error on those rows, which is why the query above
+filters with <code>json_valid(input)</code>. (<code>tool_name</code> is the tool's RubyLLM name:
+the snake_cased class name with any <code>_tool</code> suffix removed, so
+<code>WordCountTool</code> is logged as <code>word_count</code>.)</p>
 
 
 

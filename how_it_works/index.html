@@ -535,10 +535,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#thread-local-state" class="md-nav__link">
+  <a href="#run-state" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Thread-Local State
+        Run State
       
     </span>
   </a>
@@ -703,10 +703,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#thread-local-state" class="md-nav__link">
+  <a href="#run-state" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Thread-Local State
+        Run State
       
     </span>
   </a>
@@ -921,38 +921,47 @@ each pair that carries the guard, not the <code>before_*</code> half.</p>
 <h3 id="network-run-lifecycle">Network run lifecycle<a class="headerlink" href="#network-run-lifecycle" title="Permanent link">&para;</a></h3>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>before_network_run(ctx)
 </span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>  → generates a new run_id  (SecureRandom.uuid)
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>  → stores run_id and started_at in Thread.current
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>  → stores run_id and started_at in fiber storage (Fiber[])
 </span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>
 </span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>  ... network executes: robots run, tools are called ...
 </span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>after_network_run(ctx)
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>  → writes the network_runs row using the thread-local run_id/started_at
-</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>  → clears both thread-locals in an `ensure` block
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>after_network_run(ctx)        # or on_error(ctx) when the run raised
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>  → writes the network_runs row using the stored run_id/started_at
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>  → clears both keys in an `ensure` block
 </span></code></pre></div>
+<p>RobotLab skips the <code>after_*</code> hooks when a run raises and calls <code>on_error</code>
+instead, so the hook implements <code>on_error</code> as well: it writes the same row,
+with <code>error_class</code>/<code>error_message</code> filled in, and clears the same state.</p>
 <p><code>after_network_run</code> is a no-op if there is no <code>current_run_id</code> — this
 guards against <code>after_network_run</code> firing without a matching
 <code>before_network_run</code> (for example, if the hook was registered mid-flight).</p>
 <h3 id="robot-run-and-tool-call-lifecycle">Robot run and tool call lifecycle<a class="headerlink" href="#robot-run-and-tool-call-lifecycle" title="Permanent link">&para;</a></h3>
-<p><code>before_run</code> / <code>before_tool_call</code> don't touch <code>Thread.current</code> at all —
+<p><code>before_run</code> / <code>before_tool_call</code> don't touch fiber storage at all —
 they stash <code>started_at</code> on <code>ctx.local</code>, which is namespace-scoped state that
 RobotLab's <code>HookContext</code> provides per-callback-pair (see
 <code>ctx.with_namespace(:audit)</code> in the test suite for how this is activated).</p>
 <p><code>after_run</code> / <code>after_tool_call</code> then read <code>ctx.local.started_at</code>, look up the
-thread-local <code>run_id</code> set by an enclosing <code>before_network_run</code> (or <code>nil</code> if
+<code>run_id</code> set by an enclosing <code>before_network_run</code> (or <code>nil</code> if
 there is none), and write one <code>audit_events</code> row via the shared private
-<code>record_audit_event</code> helper.</p>
+<code>record_audit_event</code> helper. A robot run that raises reaches the same code
+through <code>on_error</code>, so it is recorded as a <code>"robot_run"</code> row with the error
+columns set.</p>
 <h3 id="run-id-correlation">Run ID correlation<a class="headerlink" href="#run-id-correlation" title="Permanent link">&para;</a></h3>
 <p>All events produced while a given <code>Network#run</code> is executing — the network
 run itself, every robot invocation, every tool call — share the same
-<code>run_id</code>, because that ID lives in <code>Thread.current</code> for the duration of the
+<code>run_id</code>, because that ID lives in fiber storage for the duration of the
 network run and every robot/tool callback reads it. This is what makes
-<code>EventLog#events_for(run_id)</code> a full execution trace rather than a fragment.</p>
+<code>EventLog#events_for(run_id)</code> a full execution trace rather than a fragment.
+Tasks with no dependency between them are run by the network in separate
+fibers or threads; those inherit a copy of the storage when they are created,
+so their events carry the same <code>run_id</code> (see
+<a href="#run-state">Run State</a>).</p>
 <p>Standalone <code>Robot#run</code> or <code>Tool#call</code> invocations made outside of any
 network run see <code>current_run_id</code> as <code>nil</code> — they still get logged, just
 without a correlating run.</p>
-<h2 id="thread-local-state">Thread-Local State<a class="headerlink" href="#thread-local-state" title="Permanent link">&para;</a></h2>
-<p>Two <code>Thread.current</code> keys carry state between the <code>before_*</code> and <code>after_*</code>
-halves of the network-run lifecycle:</p>
+<h2 id="run-state">Run State<a class="headerlink" href="#run-state" title="Permanent link">&para;</a></h2>
+<p>Two fiber-storage keys (<code>Fiber[]</code>) carry state between the <code>before_*</code> and
+<code>after_*</code> halves of the network-run lifecycle:</p>
 <table>
 <thead>
 <tr>
@@ -966,22 +975,23 @@ halves of the network-run lifecycle:</p>
 <tr>
 <td><code>:robot_lab_audit_run_id</code></td>
 <td><code>before_network_run</code></td>
-<td><code>after_network_run</code> (<code>ensure</code>)</td>
+<td><code>after_network_run</code> / <code>on_error</code> (<code>ensure</code>)</td>
 <td>correlates all events within one network run</td>
 </tr>
 <tr>
 <td><code>:robot_lab_audit_network_started_at</code></td>
 <td><code>before_network_run</code></td>
-<td><code>after_network_run</code> (<code>ensure</code>)</td>
+<td><code>after_network_run</code> / <code>on_error</code> (<code>ensure</code>)</td>
 <td>computes the network run's <code>duration_ms</code></td>
 </tr>
 </tbody>
 </table>
-<p>Because this is <code>Thread.current</code> rather than <code>ctx.local</code>, run correlation
-does <strong>not</strong> cross Fiber or Ractor boundaries — parallel work dispatched via
-<code>robot_lab-ractor</code>, for instance, will not inherit the parent network run's
-<code>run_id</code>. <code>before_run</code>/<code>before_tool_call</code> state, by contrast, uses <code>ctx.local</code>
-and is scoped per-callback-pair regardless of thread.</p>
+<p>Fiber storage is copied into every Fiber and Thread created while it is set,
+which is how concurrent network tasks inherit the parent run's <code>run_id</code>
+(<code>Thread.current[]</code> is per-fiber and is not inherited). It does <strong>not</strong> cross
+Ractor boundaries — parallel work dispatched via <code>robot_lab-ractor</code> is
+recorded with a <code>nil</code> <code>run_id</code>. <code>before_run</code>/<code>before_tool_call</code> state, by
+contrast, uses <code>ctx.local</code> and is scoped per-callback-pair.</p>
 <h2 id="json-serialisation-safe_json">JSON Serialisation (<code>safe_json</code>)<a class="headerlink" href="#json-serialisation-safe_json" title="Permanent link">&para;</a></h2>
 <p><code>input</code>/<code>output</code> values (tool arguments, robot request/response payloads) are
 serialised with a private <code>safe_json</code> helper:</p>
@@ -989,12 +999,14 @@ serialised with a private <code>safe_json</code> helper:</p>
 </span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="kp">nil</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">value</span><span class="o">.</span><span class="n">nil?</span>
 </span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
 </span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">  </span><span class="no">JSON</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="k">rescue</span><span class="w"> </span><span class="no">JSON</span><span class="o">::</span><span class="no">GeneratorError</span><span class="p">,</span><span class="w"> </span><span class="no">TypeError</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="k">rescue</span><span class="w"> </span><span class="no">JSON</span><span class="o">::</span><span class="no">JSONError</span><span class="p">,</span><span class="w"> </span><span class="no">TypeError</span>
 </span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">  </span><span class="n">value</span><span class="o">.</span><span class="n">inspect</span>
 </span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="k">end</span>
 </span></code></pre></div>
-<p>If a value can't be JSON-encoded (circular references, unsupported types),
-the column falls back to Ruby's <code>#inspect</code> string instead of raising. Don't
+<p>If <code>JSON.generate</code> raises a <code>JSON::JSONError</code> or <code>TypeError</code> (a <code>NaN</code> or
+<code>Infinity</code> float, or a circular reference, for example), the column falls back to Ruby's <code>#inspect</code>
+string instead of raising. Arbitrary objects don't trigger the fallback —
+<code>JSON.generate</code> encodes them as a JSON string of their <code>#to_s</code>. Don't
 assume every <code>input</code>/<code>output</code> value is parseable JSON — check for <code>nil</code>
 first if you write tooling against the column, and be prepared for an
 <code>inspect</code>-style string on the rare unencodable payload.</p>
@@ -1008,7 +1020,9 @@ and finally to <code>#inspect</code> if anything raises.</p>
 <p>When a network run, robot run, or tool call raises, the hook's
 <code>error_fields</code> helper extracts <code>error_class</code> (the exception's class name as
 a string) and <code>error_message</code> (the exception's message) from whatever
-<code>ctx.error</code> / <code>ctx.tool_error</code> object RobotLab's Hook system populates. Both
+<code>ctx.error</code> / <code>ctx.tool_error</code> object RobotLab's Hook system populates. Failed
+robot and network runs arrive through <code>on_error</code>; failed tool calls arrive
+through <code>after_tool_call</code> with <code>ctx.tool_error</code> set. Both
 columns are <code>nil</code> on success. <code>EventLog#recent_errors</code> filters
 <code>audit_events</code> down to rows where <code>error_class IS NOT NULL</code>.</p>
 <h2 id="robotlab-extension-registration">RobotLab Extension Registration<a class="headerlink" href="#robotlab-extension-registration" title="Permanent link">&para;</a></h2>
