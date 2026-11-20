@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- Ruby 3.2+ (per the gemspec's `required_ruby_version`)
+- Ruby 4.0.9+ (per the gemspec's `required_ruby_version`)
 - `robot_lab` — `robot_lab/audit` requires `RobotLab::Hook` to already be defined, so `robot_lab` must be `require`d first.
 - SQLite — the gem depends on the `sqlite3` gem directly; no separate database server to run.
 
